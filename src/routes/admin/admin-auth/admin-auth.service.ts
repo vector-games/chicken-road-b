@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { ConflictException, Injectable, UnauthorizedException, BadRequestException, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import * as bcrypt from "bcrypt";
@@ -6,7 +6,9 @@ import * as bcrypt from "bcrypt";
 import { JwtTokenService } from "../../../modules/jwt/jwt-token.service";
 
 import { Admin, AdminRole } from "../../../entities/admin.entity";
+import { Agents } from "../../../entities/agents.entity";
 import { LoginDto, LoginResponseDto, RefreshTokenDto, RefreshTokenResponseDto, AdminInfoDto, CreateAdminDto } from "./dto/login.dto";
+import { AgentProfileResponseDto, ChangePasswordDto } from "./dto/profile.dto";
 
 export interface AdminTokenPayload {
     sub: string;
@@ -22,6 +24,8 @@ export class AdminAuthService {
     constructor(
         @InjectRepository(Admin)
         private readonly adminRepository: Repository<Admin>,
+        @InjectRepository(Agents)
+        private readonly agentsRepository: Repository<Agents>,
         private readonly jwtTokenService: JwtTokenService,
     ) { }
 
@@ -127,6 +131,80 @@ export class AdminAuthService {
             id: newAdmin.id,
             username: newAdmin.username,
             role: newAdmin.role,
+        };
+    }
+
+    /**
+     * Get agent profile with full details (Agent Admin only)
+     */
+    async getAgentProfile(adminPayload: AdminTokenPayload): Promise<AgentProfileResponseDto> {
+        // Only allow Agent Admins (not Super Admins)
+        if (adminPayload.role === AdminRole.SUPER_ADMIN) {
+            throw new UnauthorizedException('This endpoint is only available for Agent Admins');
+        }
+
+        const admin = await this.adminRepository.findOne({ where: { id: adminPayload.sub } });
+        if (!admin) {
+            throw new NotFoundException('Admin not found');
+        }
+
+        // Agent ID is the username for Agent Admins
+        const agentId = admin.username;
+        const agent = await this.agentsRepository.findOne({ where: { agentId } });
+        if (!agent) {
+            throw new NotFoundException('Agent not found');
+        }
+
+        const dto = new AgentProfileResponseDto();
+        dto.id = admin.id;
+        dto.username = admin.username;
+        dto.role = admin.role;
+        dto.agentId = agentId;
+        dto.cert = agent.cert;
+        dto.agentIPaddress = agent.agentIPaddress;
+        dto.callbackURL = agent.callbackURL;
+        dto.isActive = agent.isWhitelisted;
+        dto.currency = agent.currency || 'INR';
+        dto.allowedGameCodes = agent.allowedGameCodes || [];
+        dto.createdAt = agent.createdAt.toISOString();
+        dto.updatedAt = agent.updatedAt.toISOString();
+
+        return dto;
+    }
+
+    /**
+     * Change password for Agent Admin
+     */
+    async changePassword(adminPayload: AdminTokenPayload, changePasswordDto: ChangePasswordDto): Promise<{ success: boolean; message: string }> {
+        // Only allow Agent Admins (not Super Admins)
+        if (adminPayload.role === AdminRole.SUPER_ADMIN) {
+            throw new UnauthorizedException('This endpoint is only available for Agent Admins');
+        }
+
+        // Validate new password matches confirm password
+        if (changePasswordDto.newPassword !== changePasswordDto.confirmPassword) {
+            throw new BadRequestException('New password and confirm password do not match');
+        }
+
+        const admin = await this.adminRepository.findOne({ where: { id: adminPayload.sub } });
+        if (!admin) {
+            throw new NotFoundException('Admin not found');
+        }
+
+        // Verify current password
+        const isCurrentPasswordValid = await bcrypt.compare(changePasswordDto.currentPassword, admin.passwordHash);
+        if (!isCurrentPasswordValid) {
+            throw new UnauthorizedException('Current password is incorrect');
+        }
+
+        // Hash new password and update
+        const newPasswordHash = await bcrypt.hash(changePasswordDto.newPassword, 10);
+        admin.passwordHash = newPasswordHash;
+        await this.adminRepository.save(admin);
+
+        return {
+            success: true,
+            message: 'Password changed successfully',
         };
     }
 }

@@ -1,9 +1,12 @@
-import { Body, Controller, Post, Get, UseGuards } from "@nestjs/common";
+import { Body, Controller, Post, Get, UseGuards, Patch } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
 import { AdminAuthService, type AdminTokenPayload } from "./admin-auth.service";
 import { AdminAuthGuard } from "../guards/admin-auth.guard";
+import { RolesGuard, Roles } from "../guards/roles.guard";
 import { CurrentAdmin } from "./decorators/admin-auth.decorator";
+import { AdminRole } from "../../../entities/admin.entity";
 import { LoginDto, LoginResponseDto, RefreshTokenDto, RefreshTokenResponseDto, AdminInfoDto, CreateAdminDto } from "./dto/login.dto";
+import { AgentProfileResponseDto, ChangePasswordDto } from "./dto/profile.dto";
 
 @ApiTags('Admin Auth')
 @Controller('admin/api/v1/auth')
@@ -54,5 +57,42 @@ export class AdminAuthController {
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     async signup(@Body() signupDto: CreateAdminDto): Promise<AdminInfoDto> {
         return this.adminAuthService.signup(signupDto);
+    }
+
+    @Get('profile/agent')
+    @UseGuards(AdminAuthGuard, RolesGuard)
+    @Roles(AdminRole.ADMIN)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get agent profile with full details (Agent Admin only)' })
+    @ApiResponse({ status: 200, description: 'Agent profile retrieved successfully', type: AgentProfileResponseDto })
+    @ApiResponse({ status: 401, description: 'Unauthorized' })
+    @ApiResponse({ status: 403, description: 'Forbidden - Agent Admin only' })
+    @ApiResponse({ status: 404, description: 'Agent not found' })
+    async getAgentProfile(@CurrentAdmin() admin: AdminTokenPayload): Promise<{ status: string; data: AgentProfileResponseDto }> {
+        const profile = await this.adminAuthService.getAgentProfile(admin);
+        return {
+            status: '0000',
+            data: profile,
+        };
+    }
+
+    @Patch('profile/change-password')
+    @UseGuards(AdminAuthGuard, RolesGuard)
+    @Roles(AdminRole.ADMIN)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Change password (Agent Admin only)' })
+    @ApiResponse({ status: 200, description: 'Password changed successfully' })
+    @ApiResponse({ status: 400, description: 'Bad request - validation failed' })
+    @ApiResponse({ status: 401, description: 'Unauthorized - incorrect current password' })
+    @ApiResponse({ status: 403, description: 'Forbidden - Agent Admin only' })
+    async changePassword(
+        @CurrentAdmin() admin: AdminTokenPayload,
+        @Body() changePasswordDto: ChangePasswordDto,
+    ): Promise<{ status: string; message: string }> {
+        const result = await this.adminAuthService.changePassword(admin, changePasswordDto);
+        return {
+            status: '0000',
+            message: result.message,
+        };
     }
 }
