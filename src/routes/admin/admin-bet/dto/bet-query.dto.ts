@@ -1,7 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsOptional, IsNumber, Min, Max, IsString, IsEnum, IsDateString } from "class-validator";
-import { BetStatus as BackendBetStatus, Difficulty } from "../../../../entities/bet.entity";
+import { BetStatus as BackendBetStatus } from "@vector-games/game-core";
+import { Difficulty } from "../../../../entities/bet.entity";
 
 // Frontend-compatible BetStatus enum (uppercase)
 export enum BetStatus {

@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Bet, BetStatus as BackendBetStatus } from "../../../../entities/bet.entity";
+import { Bet, BetStatus as BackendBetStatus } from "@vector-games/game-core";
+import { Difficulty } from "../../../../entities/bet.entity";
 
 /**
  * Frontend-compatible Bet response DTO
@@ -72,7 +73,7 @@ export class BetResponseDto {
         dto.roundId = bet.roundId;
         dto.platform = platform; // Platform from games table
         dto.game = bet.gameCode; // Map gameCode to game
-        dto.difficulty = bet.difficulty;
+        dto.difficulty = bet.gameMetadata?.difficulty || '';
         dto.betAmount = bet.betAmount;
         dto.winAmount = bet.winAmount;
         dto.currency = bet.currency;

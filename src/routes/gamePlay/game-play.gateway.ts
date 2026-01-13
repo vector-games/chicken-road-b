@@ -13,15 +13,14 @@ import { Server, Socket } from 'socket.io';
 import {
   JwtTokenService,
   UserTokenPayload,
-} from '../../modules/jwt/jwt-token.service';
+} from '@vector-games/game-core';
 import { GameAction, GameActionDto } from './DTO/game-action.dto';
 import { GamePlayService } from './game-play.service';
 import { SingleWalletFunctionsService } from '../single-wallet-functions/single-wallet-functions.service';
-import { UserService } from '../../modules/user/user.service';
+import { UserService, AgentsService } from '@vector-games/game-core';
 import { LastWinBroadcasterService } from '../../modules/last-win/last-win-broadcaster.service';
 import { FairnessService } from '../../modules/fairness/fairness.service';
 import { GameService } from '../../modules/games/game.service';
-import { AgentsService } from '../../modules/agents/agents.service';
 import { DEFAULTS } from '../../config/defaults.config';
 import { ErrorResponse } from '../../common/types';
 

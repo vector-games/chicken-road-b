@@ -4,9 +4,7 @@ import {
   Inject,
   forwardRef,
 } from '@nestjs/common';
-import { WalletRetryJob, WalletRetryJobStatus } from '../../entities/wallet-retry-job.entity';
-import { WalletApiAction } from '../../common/enums/wallet.enums';
-import { BetStatus } from '../../entities/bet.entity';
+import { WalletRetryJob, WalletRetryJobStatus, BetStatus, WalletApiAction } from '@vector-games/game-core';
 import { SingleWalletFunctionsService } from '../../routes/single-wallet-functions/single-wallet-functions.service';
 import { BetService } from '../bet/bet.service';
 import { WalletAuditService } from '../wallet-audit/wallet-audit.service';

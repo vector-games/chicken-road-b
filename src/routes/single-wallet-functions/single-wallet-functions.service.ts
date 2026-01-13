@@ -7,15 +7,8 @@ import {
 } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
-import { AgentsService } from '../../modules/agents/agents.service';
-import { BetService } from '../../modules/bet/bet.service';
+import { AgentsService, BetService, WalletAuditService, WalletAuditStatus, WalletApiAction, WalletErrorType } from '@vector-games/game-core';
 import { GameConfigService } from '../../modules/gameConfig/game-config.service';
-import {
-  WalletApiAction,
-  WalletErrorType,
-} from '../../common/enums/wallet.enums';
-import { WalletAuditService } from '../../modules/wallet-audit/wallet-audit.service';
-import { WalletAuditStatus } from '../../entities/wallet-audit.entity';
 import { WalletRetryJobService } from '../../modules/wallet-retry/wallet-retry-job.service';
 import { DEFAULTS } from '../../config/defaults.config';
 

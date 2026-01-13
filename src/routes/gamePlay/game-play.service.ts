@@ -2,11 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { v4 as uuidv4 } from 'uuid';
-
-import { Difficulty as BetDifficulty } from '../../entities/bet.entity';
+import { BetService } from '@vector-games/game-core';
 import { BetPayloadDto, Difficulty } from './DTO/bet-payload.dto';
 
-import { BetService } from '../../modules/bet/bet.service';
 import { FairnessService } from '../../modules/fairness/fairness.service';
 import { GameConfigService } from '../../modules/gameConfig/game-config.service';
 import { HazardSchedulerService } from '../../modules/hazard/hazard-scheduler.service';
@@ -195,7 +193,9 @@ export class GamePlayService {
       externalPlatformTxId,
       userId,
       roundId,
-      difficulty: dto.difficulty as BetDifficulty,
+      gameMetadata: {
+        difficulty: dto.difficulty as string,
+      },
       betAmount: betAmountStr,
       currency: currencyUC,
       gameCode: gamePayloads.gameCode,
@@ -1182,7 +1182,7 @@ export class GamePlayService {
         currency: bet.currency,
         gameMeta: {
           coeff: gameMetaCoeff,
-          difficulty: bet.difficulty,
+          difficulty: bet.gameMetadata?.difficulty as Difficulty,
         },
       };
     });

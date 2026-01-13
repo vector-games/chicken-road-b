@@ -1,6 +1,6 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { WalletRetryJob } from '../../entities/wallet-retry-job.entity';
+import { WalletRetryJob } from '@vector-games/game-core';
 import { WalletRetryJobService } from './wallet-retry-job.service';
 import { WalletRetryProcessorService } from './wallet-retry-processor.service';
 import { WalletRetrySchedulerService } from './wallet-retry-scheduler.service';

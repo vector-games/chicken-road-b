@@ -3,7 +3,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { WalletRetryJob, WalletRetryJobStatus } from '../../entities/wallet-retry-job.entity';
+import { WalletRetryJob, WalletRetryJobStatus } from '@vector-games/game-core';
 import { RedisService } from '../redis/redis.service';
 import { WalletRetryJobService, calculateNextRetryTime } from './wallet-retry-job.service';
 import { WalletRetryProcessorService } from './wallet-retry-processor.service';

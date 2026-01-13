@@ -7,8 +7,8 @@ import { Repository, LessThan, LessThanOrEqual, In } from 'typeorm';
 import {
   WalletRetryJob,
   WalletRetryJobStatus,
-} from '../../entities/wallet-retry-job.entity';
-import { WalletApiAction } from '../../common/enums/wallet.enums';
+  WalletApiAction,
+} from '@vector-games/game-core';
 
 export interface CreateRetryJobParams {
   platformTxId: string;

@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, In, Repository } from 'typeorm';
-import { Agents } from '../../entities/agents.entity';
+import { Agents } from '@vector-games/game-core';
 import { GameService } from '../games/game.service';
 
 export interface CreateAgentParams {

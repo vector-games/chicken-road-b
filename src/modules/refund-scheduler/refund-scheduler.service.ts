@@ -8,7 +8,7 @@ import { BetService } from '../bet/bet.service';
 import { RedisService } from '../redis/redis.service';
 import { SingleWalletFunctionsService } from '../../routes/single-wallet-functions/single-wallet-functions.service';
 import { GameService } from '../games/game.service';
-import { Bet, BetStatus } from '../../entities/bet.entity';
+import { Bet, BetStatus } from '@vector-games/game-core';
 import { DEFAULTS } from '../../config/defaults.config';
 
 /**
@@ -326,7 +326,7 @@ export class RefundSchedulerService implements OnModuleInit, OnModuleDestroy {
           gameType: gamePayloads.gameType,
           gameCode: gamePayloads.gameCode,
           gameName: gamePayloads.gameName,
-          betType: bet.betType || null,
+          betType: bet.gameMetadata?.betType || null,
           currency: bet.currency || DEFAULTS.CURRENCY.DEFAULT,
         },
         gameInfo: bet.gameInfo ? JSON.parse(bet.gameInfo) : undefined,

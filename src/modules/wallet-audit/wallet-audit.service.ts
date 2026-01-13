@@ -7,11 +7,9 @@ import { Repository, LessThan } from 'typeorm';
 import {
   WalletAudit,
   WalletAuditStatus,
-} from '../../entities/wallet-audit.entity';
-import {
   WalletApiAction,
   WalletErrorType,
-} from '../../common/enums/wallet.enums';
+} from '@vector-games/game-core';
 
 export interface CreateWalletAuditParams {
   requestId?: string;

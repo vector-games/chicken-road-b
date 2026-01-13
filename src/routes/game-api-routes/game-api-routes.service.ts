@@ -1,7 +1,7 @@
 import { Injectable, Logger, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { JwtTokenService } from '../../modules/jwt/jwt-token.service';
+import { JwtTokenService } from '@vector-games/game-core';
 import { UserSessionService } from '../../modules/user-session/user-session.service';
 import { GameService } from '../../modules/games/game.service';
 import { GameConfigService } from '../../modules/gameConfig/game-config.service';

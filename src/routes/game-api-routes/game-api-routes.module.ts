@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { JwtTokenModule } from '../../modules/jwt/jwt-token.module';
+import { JwtTokenModule } from '@vector-games/game-core';
 import { UserSessionModule } from '../../modules/user-session/user-session.module';
 import { GameModule } from '../../modules/games/game.module';
 import { GameConfigModule } from '../../modules/gameConfig/game-config.module';

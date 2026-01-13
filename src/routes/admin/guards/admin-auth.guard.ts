@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from "@nestjs/common";
 
-import { JwtTokenService } from "../../../modules/jwt/jwt-token.service";
+import { JwtTokenService } from "@vector-games/game-core";
 import { AdminTokenPayload } from "../admin-auth/admin-auth.service";
 
 @Injectable()

@@ -3,10 +3,9 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import * as bcrypt from "bcrypt";
 
-import { JwtTokenService } from "../../../modules/jwt/jwt-token.service";
+import { JwtTokenService, Agents } from "@vector-games/game-core";
 
 import { Admin, AdminRole } from "../../../entities/admin.entity";
-import { Agents } from "../../../entities/agents.entity";
 import { LoginDto, LoginResponseDto, RefreshTokenDto, RefreshTokenResponseDto, AdminInfoDto, CreateAdminDto } from "./dto/login.dto";
 import { AgentProfileResponseDto, ChangePasswordDto } from "./dto/profile.dto";
 

@@ -7,26 +7,20 @@ import databaseConfig from './config/database.config';
 import redisConfig from './config/redis.config';
 import jwtConfig from './config/jwt.config';
 
-import { User } from './entities/User.entity';
-import { Agents } from './entities/agents.entity';
-import { GameConfig } from './entities/game-config.entity';
-import { Bet } from './entities/bet.entity';
-import { WalletAudit } from './entities/wallet-audit.entity';
-import { WalletRetryJob } from './entities/wallet-retry-job.entity';
+import { UserModule, AgentsModule, WalletAuditModule, WalletRetryModule, JwtTokenModule } from '@vector-games/game-core';
 
-import { AgentsModule } from './modules/agents/agents.module';
-import { BetModule } from './modules/bet/bet.module';
+import { User, Agents, Bet, WalletAudit, WalletRetryJob } from '@vector-games/game-core';
+import { GameConfig } from './entities/game-config.entity';
+
 import { BetCleanupSchedulerModule } from './modules/bet-cleanup/bet-cleanup-scheduler.module';
 import { HazardModule } from './modules/hazard/hazard.module';
-import { WalletAuditModule } from './modules/wallet-audit/wallet-audit.module';
-import { WalletRetryModule } from './modules/wallet-retry/wallet-retry.module';
 import { CommonApiFunctionsModule } from './routes/common-api-functions/common-api-functions.module';
 import { GameApiRoutesModule } from './routes/game-api-routes/game-api-routes.module';
 import { GamePlayModule } from './routes/gamePlay/game-play.module';
 import { SingleWalletFunctionsModule } from './routes/single-wallet-functions/single-wallet-functions.module';
 import { HealthController } from './routes/extra/health.controller';
 import { Game } from './entities/game.entity';
-import { GameModule } from './modules/games/game.module';
+import { BetConfigModule } from './modules/bet-config/bet-config.module';
 import { AppController } from './app.controller';
 import { Admin } from './entities/admin.entity';
 import { AdminModule } from './routes/admin/admin.module';
@@ -77,18 +71,23 @@ import { RefundSchedulerModule } from './modules/refund-scheduler/refund-schedul
       },
     }),
     TypeOrmModule.forFeature([User, GameConfig, Agents, Game]),
+    UserModule,
     AgentsModule,
-    HazardModule,
-    BetModule,
-    BetCleanupSchedulerModule,
-    RefundSchedulerModule,
+    BetConfigModule, // Configured BetModule with GameService validation
     WalletAuditModule,
     WalletRetryModule,
+    JwtTokenModule.forRoot({
+      secret: process.env.JWT_SECRET || '',
+      expiresIn: '24h',
+      genericExpiresIn: '1h',
+    }),
+    HazardModule,
+    BetCleanupSchedulerModule,
+    RefundSchedulerModule,
     CommonApiFunctionsModule,
     GameApiRoutesModule,
     GamePlayModule,
     SingleWalletFunctionsModule,
-    GameModule,
     AdminModule,
   ],
   controllers: [HealthController, AppController],
