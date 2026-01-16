@@ -4,11 +4,10 @@ import {
   Inject,
   forwardRef,
 } from '@nestjs/common';
-import { WalletRetryJob, WalletRetryJobStatus, BetStatus, WalletApiAction } from '@vector-games/game-core';
-import { SingleWalletFunctionsService } from '../../routes/single-wallet-functions/single-wallet-functions.service';
+import { WalletRetryJob, WalletRetryJobStatus, BetStatus, WalletApiAction, WalletService, WalletRetryService } from '@vector-games/game-core';
 import { BetService } from '../bet/bet.service';
 import { WalletAuditService } from '../wallet-audit/wallet-audit.service';
-import { WalletRetryJobService, calculateNextRetryTime } from './wallet-retry-job.service';
+import { calculateNextRetryTime } from '@vector-games/game-core/dist/services/wallet-retry/wallet-retry.service';
 
 export interface RetryResult {
   success: boolean;
@@ -23,12 +22,11 @@ export class WalletRetryProcessorService {
   private readonly logger = new Logger(WalletRetryProcessorService.name);
 
   constructor(
-    @Inject(forwardRef(() => SingleWalletFunctionsService))
-    private readonly singleWalletFunctionsService: SingleWalletFunctionsService,
+    private readonly walletService: WalletService,
     private readonly betService: BetService,
     @Inject(forwardRef(() => WalletAuditService))
     private readonly walletAuditService: WalletAuditService,
-    private readonly retryJobService: WalletRetryJobService,
+    private readonly retryJobService: WalletRetryService,
   ) {}
 
   /**
@@ -79,16 +77,20 @@ export class WalletRetryProcessorService {
       gamePayloads,
     } = retryJob;
 
+    // Extract gameCode from gamePayloads
+    const gameCode = (gamePayloads as any)?.gameCode || '';
+
     try {
-      const settleResult = await this.singleWalletFunctionsService.settleBet(
+      // WalletService automatically gets gamePayloads via WalletApiAdapter (GameService)
+      const settleResult = await this.walletService.settleBet({
         agentId,
         platformTxId,
         userId,
-        parseFloat(winAmount || '0'),
-        roundId || '',
-        parseFloat(betAmount || '0'),
-        gamePayloads || {},
-      );
+        winAmount: parseFloat(winAmount || '0'),
+        roundId: roundId || '',
+        betAmount: parseFloat(betAmount || '0'),
+        gameCode,
+      });
 
       if (settleResult.status === '0000') {
         // Success
@@ -176,6 +178,7 @@ export class WalletRetryProcessorService {
         refundTransactions = requestPayload.refundTransactions;
       } else {
         // Fallback: build from retry job data
+        const gameCode = (gamePayloads as any)?.gameCode || '';
         refundTransactions = [
           {
             platformTxId,
@@ -186,17 +189,22 @@ export class WalletRetryProcessorService {
             betTime: new Date().toISOString(),
             updateTime: new Date().toISOString(),
             roundId: roundId || '',
-            gamePayloads: gamePayloads || {},
+            gameCode, // Required for WalletService
           },
         ];
       }
 
-      const refundResult =
-        await this.singleWalletFunctionsService.refundBet(
-          agentId,
-          userId,
-          refundTransactions,
-        );
+      // Ensure all refundTransactions have gameCode
+      refundTransactions = refundTransactions.map(txn => ({
+        ...txn,
+        gameCode: txn.gameCode || (gamePayloads as any)?.gameCode || '',
+      }));
+
+      const refundResult = await this.walletService.refundBet({
+        agentId,
+        userId,
+        refundTransactions,
+      });
 
       if (refundResult.status === '0000') {
         // Success

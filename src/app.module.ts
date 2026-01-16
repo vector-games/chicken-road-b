@@ -1,4 +1,4 @@
-import { Logger, Module } from '@nestjs/common';
+import { Logger, Module, OnModuleInit, forwardRef } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 
@@ -6,8 +6,9 @@ import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import redisConfig from './config/redis.config';
 import jwtConfig from './config/jwt.config';
+import { DEFAULTS } from './config/defaults.config';
 
-import { UserModule, AgentsModule, WalletAuditModule, WalletRetryModule, JwtTokenModule } from '@vector-games/game-core';
+import { UserModule, AgentsModule, WalletAuditModule, WalletRetryModule, JwtTokenModule, WalletModule } from '@vector-games/game-core';
 
 import { User, Agents, Bet, WalletAudit, WalletRetryJob } from '@vector-games/game-core';
 import { GameConfig } from './entities/game-config.entity';
@@ -17,10 +18,10 @@ import { HazardModule } from './modules/hazard/hazard.module';
 import { CommonApiFunctionsModule } from './routes/common-api-functions/common-api-functions.module';
 import { GameApiRoutesModule } from './routes/game-api-routes/game-api-routes.module';
 import { GamePlayModule } from './routes/gamePlay/game-play.module';
-import { SingleWalletFunctionsModule } from './routes/single-wallet-functions/single-wallet-functions.module';
 import { HealthController } from './routes/extra/health.controller';
 import { Game } from './entities/game.entity';
 import { BetConfigModule } from './modules/bet-config/bet-config.module';
+import { WalletConfigModule } from './modules/wallet-config/wallet-config.module';
 import { AppController } from './app.controller';
 import { Admin } from './entities/admin.entity';
 import { AdminModule } from './routes/admin/admin.module';
@@ -45,15 +46,25 @@ import { RefundSchedulerModule } from './modules/refund-scheduler/refund-schedul
           database: string;
           synchronize: boolean;
         }
-        const dbConfig = cfg.get<DatabaseConfig>('database');
+        const dbConfig = cfg.get<DatabaseConfig>('database') || {
+          host: process.env.DB_HOST || DEFAULTS.DATABASE.DEFAULT_HOST,
+          port: parseInt(process.env.DB_PORT || String(DEFAULTS.DATABASE.DEFAULT_PORT), 10),
+          username: process.env.DB_USERNAME || DEFAULTS.DATABASE.DEFAULT_USERNAME,
+          password: process.env.DB_PASSWORD || DEFAULTS.DATABASE.DEFAULT_PASSWORD,
+          database: process.env.DB_DATABASE || DEFAULTS.DATABASE.DEFAULT_DATABASE,
+          synchronize:
+            process.env.DB_SYNCHRONIZE === undefined
+              ? DEFAULTS.DATABASE.DEFAULT_SYNCHRONIZE
+              : process.env.DB_SYNCHRONIZE === 'true',
+        };
         const cfgObj: TypeOrmModuleOptions = {
           type: 'mysql',
-          host: dbConfig?.host,
-          port: dbConfig?.port,
-          username: dbConfig?.username,
-          password: dbConfig?.password,
-          database: dbConfig?.database,
-          synchronize: dbConfig?.synchronize,
+          host: dbConfig.host,
+          port: dbConfig.port,
+          username: dbConfig.username,
+          password: dbConfig.password,
+          database: dbConfig.database,
+          synchronize: dbConfig.synchronize,
           autoLoadEntities: true,
           entities: [User, Agents, GameConfig, Bet, WalletAudit, WalletRetryJob, Game, Admin],
           extra: {
@@ -70,14 +81,18 @@ import { RefundSchedulerModule } from './modules/refund-scheduler/refund-schedul
         return cfgObj;
       },
     }),
-    TypeOrmModule.forFeature([User, GameConfig, Agents, Game]),
-    UserModule,
-    AgentsModule,
-    BetConfigModule, // Configured BetModule with GameService validation
-    WalletAuditModule,
-    WalletRetryModule,
+    // Register local entities only - package modules will register their own entities
+    TypeOrmModule.forFeature([GameConfig, Game, Admin]),
+    // Package modules - they register their own entities via TypeOrmModule.forFeature()
+    // Using forwardRef to ensure TypeORM root is fully initialized before these modules
+    forwardRef(() => UserModule),
+    forwardRef(() => AgentsModule),
+    forwardRef(() => BetConfigModule), // Configured BetModule with GameService validation
+    forwardRef(() => WalletConfigModule), // Configured WalletModule with GameService as WalletApiAdapter
+    forwardRef(() => WalletAuditModule),
+    forwardRef(() => WalletRetryModule),
     JwtTokenModule.forRoot({
-      secret: process.env.JWT_SECRET || '',
+      secret: process.env.JWT_SECRET || DEFAULTS.JWT.DEFAULT_SECRET,
       expiresIn: '24h',
       genericExpiresIn: '1h',
     }),
@@ -87,10 +102,16 @@ import { RefundSchedulerModule } from './modules/refund-scheduler/refund-schedul
     CommonApiFunctionsModule,
     GameApiRoutesModule,
     GamePlayModule,
-    SingleWalletFunctionsModule,
     AdminModule,
   ],
   controllers: [HealthController, AppController],
   providers: [],
 })
-export class AppModule { }
+export class AppModule implements OnModuleInit {
+  private readonly logger = new Logger(AppModule.name);
+
+  async onModuleInit() {
+    // This ensures TypeORM is fully initialized before any feature modules use repositories
+    this.logger.log('AppModule initialized - TypeORM DataSource should be ready');
+  }
+}

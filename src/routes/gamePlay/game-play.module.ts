@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AgentsModule, BetModule, JwtTokenModule, UserModule } from '@vector-games/game-core';
+import { AgentsModule, JwtTokenModule, UserModule, WalletModule } from '@vector-games/game-core';
 
 import { GameModule } from '../../modules/games/game.module';
 import { GamePlayGateway } from './game-play.gateway';
@@ -9,7 +9,8 @@ import { GameConfigModule } from '../../modules/gameConfig/game-config.module';
 import { HazardModule } from '../../modules/hazard/hazard.module';
 import { LastWinModule } from '../../modules/last-win/last-win.module';
 import { RedisModule } from '../../modules/redis/redis.module';
-import { SingleWalletFunctionsModule } from '../single-wallet-functions/single-wallet-functions.module';
+import { WalletConfigModule } from '../../modules/wallet-config/wallet-config.module';
+import { BetConfigModule } from '../../modules/bet-config/bet-config.module';
 
 @Module({
   imports: [
@@ -17,10 +18,10 @@ import { SingleWalletFunctionsModule } from '../single-wallet-functions/single-w
     GameConfigModule,
     RedisModule,
     AgentsModule,
-    BetModule,
+    BetConfigModule, // Provides BetService from package (initialized with GameService validation)
     FairnessModule,
     HazardModule,
-    SingleWalletFunctionsModule,
+    WalletConfigModule, // Provides WalletService from package
     UserModule,
     LastWinModule,
     GameModule,

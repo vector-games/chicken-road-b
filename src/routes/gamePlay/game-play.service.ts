@@ -10,7 +10,7 @@ import { GameConfigService } from '../../modules/gameConfig/game-config.service'
 import { HazardSchedulerService } from '../../modules/hazard/hazard-scheduler.service';
 import { RedisService } from '../../modules/redis/redis.service';
 import { GameService } from '../../modules/games/game.service';
-import { SingleWalletFunctionsService } from '../single-wallet-functions/single-wallet-functions.service';
+import { WalletService } from '@vector-games/game-core';
 
 import { DEFAULTS } from '../../config/defaults.config';
 
@@ -89,7 +89,7 @@ export class GamePlayService {
   constructor(
     private readonly gameConfigService: GameConfigService,
     private readonly redisService: RedisService,
-    private readonly singleWalletFunctionsService: SingleWalletFunctionsService,
+    private readonly walletService: WalletService,
     private readonly betService: BetService,
     private readonly hazardSchedulerService: HazardSchedulerService,
     private readonly fairnessService: FairnessService,
@@ -154,20 +154,19 @@ export class GamePlayService {
       `[BET_PLACED] user=${userId} agent=${agentId} amount=${betAmountStr} currency=${currencyUC} difficulty=${difficultyUC} roundId=${roundId} txId=${platformTxId}`,
     );
 
-    const gamePayloads = await this.gameService.getGamePayloads(gameCode);
-
     this.logger.debug(
       `Calling wallet API placeBet: user=${userId} agent=${agentId} amount=${betNumber} roundId=${roundId}`,
     );
-    const agentResult = await this.singleWalletFunctionsService.placeBet(
+    // WalletService automatically gets gamePayloads via WalletApiAdapter (GameService)
+    const agentResult = await this.walletService.placeBet({
       agentId,
       userId,
-      betNumber,
+      amount: betNumber,
       roundId,
       platformTxId,
-      currencyUC,
-      gamePayloads,
-    );
+      currency: currencyUC,
+      gameCode,
+    });
 
     if (agentResult.status !== '0000') {
       this.logger.error(
@@ -198,7 +197,7 @@ export class GamePlayService {
       },
       betAmount: betAmountStr,
       currency: currencyUC,
-      gameCode: gamePayloads.gameCode,
+      gameCode,
       isPremium: false,
       betPlacedAt: balanceTs ? new Date(balanceTs) : undefined,
       balanceAfterBet: balance ? String(balance) : undefined,
@@ -385,8 +384,6 @@ export class GamePlayService {
     const sessionTTL = await this.redisService.getSessionTTL(gameCode);
     await this.redisService.set(redisKey, gameSession, sessionTTL);
 
-    const gamePayloads = await this.gameService.getGamePayloads(gameCode);
-
     let settlementAmount = 0;
     if (endReason === 'hazard') {
       settlementAmount = DEFAULTS.GAME.SETTLEMENT_AMOUNT_ZERO;
@@ -395,16 +392,17 @@ export class GamePlayService {
     }
     if (endReason === 'win' || endReason === 'hazard') {
       try {
-        const settleResult = await this.singleWalletFunctionsService.settleBet(
-          gameSession.agentId,
-          gameSession.platformBetTxId,
+        // WalletService automatically gets gamePayloads via WalletApiAdapter (GameService)
+        const settleResult = await this.walletService.settleBet({
+          agentId: gameSession.agentId,
+          platformTxId: gameSession.platformBetTxId,
           userId,
-          settlementAmount,
-          gameSession.roundId,
-          gameSession.betAmount,
-          gamePayloads,
+          winAmount: settlementAmount,
+          roundId: gameSession.roundId,
+          betAmount: parseFloat(gameSession.betAmount.toString()),
+          gameCode,
           gameSession,
-        );
+        });
 
         this.logger.log(
           `Settlement success: user=${userId} balance=${settleResult.balance} status=${settleResult.status} settlementAmount=${settlementAmount} txId=${gameSession.platformBetTxId}`,
@@ -529,20 +527,18 @@ export class GamePlayService {
       `[CASHOUT] user=${userId} agent=${agentId} step=${gameSession.currentStep} multiplier=${currentMultiplier} winAmount=${settlementAmount} txId=${gameSession.platformBetTxId}`,
     );
 
-    const gamePayloads = await this.gameService.getGamePayloads(gameCode);
-
     try {
-        // Wallet API call logging handled in single-wallet-functions.service
-      const settleResult = await this.singleWalletFunctionsService.settleBet(
-        gameSession.agentId,
-        gameSession.platformBetTxId,
+      // WalletService automatically gets gamePayloads via WalletApiAdapter (GameService)
+      const settleResult = await this.walletService.settleBet({
+        agentId: gameSession.agentId,
+        platformTxId: gameSession.platformBetTxId,
         userId,
-        settlementAmount,
-        gameSession.roundId,
-        gameSession.betAmount,
-        gamePayloads,
+        winAmount: settlementAmount,
+        roundId: gameSession.roundId,
+        betAmount: parseFloat(gameSession.betAmount.toString()),
+        gameCode,
         gameSession,
-      );
+      });
 
       this.logger.log(
         `Cashout settlement success: user=${userId} balance=${settleResult.balance} status=${settleResult.status} settlementAmount=${settlementAmount} txId=${gameSession.platformBetTxId}`,

@@ -1,17 +1,20 @@
 import { Game } from "../../entities/game.entity";
-import { Injectable, NotFoundException, ConflictException } from "@nestjs/common";
+import { Injectable, NotFoundException, ConflictException, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { GameValidationService, WalletApiAdapter } from "@vector-games/game-core";
 
 @Injectable()
 export class GameService implements GameValidationService, WalletApiAdapter {
+  private logger = new Logger(GameService.name);
+
     constructor(
         @InjectRepository(Game)
         private readonly gameRepository: Repository<Game>,
     ) { }
 
     async getGame(gameCode: string): Promise<Game> {
+        this.logger.log(`Getting game for gameCode: ${gameCode}`)
         const game = await this.gameRepository.findOne({ where: { gameCode } })
         if (!game) {
             throw new NotFoundException(`Game with code ${gameCode} not found`)
@@ -41,7 +44,9 @@ export class GameService implements GameValidationService, WalletApiAdapter {
         gameType: string;
         settleType: string;
     }> {
+        this.logger.log(`Getting game payloads for gameCode: ${gameCode}`)
         const game = await this.getGame(gameCode)
+        this.logger.log(`Game payloads: ${JSON.stringify(game)}`)
         return {
             gameCode: game.gameCode,
             gameName: game.gameName,

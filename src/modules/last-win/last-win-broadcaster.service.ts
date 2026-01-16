@@ -58,10 +58,6 @@ export class LastWinBroadcasterService implements OnModuleInit, OnModuleDestroy 
 
     // Broadcast to all connected clients
     this.server.emit('gameService-last-win', winData);
-
-    this.logger.debug(
-      `Broadcasted last-win: ${winData.username} won ${winData.winAmount} ${winData.currency}`,
-    );
   }
 }
 

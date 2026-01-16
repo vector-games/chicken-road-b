@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { WalletAuditService } from './wallet-audit.service';
-import { WalletRetryJobService } from '../wallet-retry/wallet-retry-job.service';
+import { WalletRetryService } from '@vector-games/game-core';
 import { RedisService } from '../redis/redis.service';
 
 /**
@@ -24,8 +24,8 @@ export class WalletAuditCleanupService {
 
   constructor(
     private readonly walletAuditService: WalletAuditService,
-    @Inject(forwardRef(() => WalletRetryJobService))
-    private readonly retryJobService: WalletRetryJobService,
+    @Inject(forwardRef(() => WalletRetryService))
+    private readonly retryJobService: WalletRetryService,
     private readonly redisService: RedisService,
   ) {
     this.logger.log('Wallet audit cleanup scheduler initialized');
