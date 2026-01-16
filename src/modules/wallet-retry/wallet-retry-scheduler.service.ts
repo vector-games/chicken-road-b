@@ -3,9 +3,9 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { WalletRetryJob, WalletRetryJobStatus } from '../../entities/wallet-retry-job.entity';
+import { WalletRetryJob, WalletRetryJobStatus, WalletRetryService } from '@vector-games/game-core';
 import { RedisService } from '../redis/redis.service';
-import { WalletRetryJobService, calculateNextRetryTime } from './wallet-retry-job.service';
+import { calculateNextRetryTime } from '@vector-games/game-core/dist/services/wallet-retry/wallet-retry.service';
 import { WalletRetryProcessorService } from './wallet-retry-processor.service';
 
 /**
@@ -20,7 +20,7 @@ export class WalletRetrySchedulerService {
   private readonly SCHEDULER_LOCK_TTL = 60; // 1 minute (cron runs every minute)
 
   constructor(
-    private readonly retryJobService: WalletRetryJobService,
+    private readonly retryJobService: WalletRetryService,
     private readonly retryProcessor: WalletRetryProcessorService,
     private readonly redisService: RedisService,
   ) {

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, Between, LessThanOrEqual, MoreThanOrEqual, Like } from "typeorm";
-import { Bet, BetStatus } from "../../../entities/bet.entity";
+import { Bet, BetStatus } from "@vector-games/game-core";
 import { Game } from "../../../entities/game.entity";
 import { BetQueryDto } from "./dto/bet-query.dto";
 import { BetTotalsDto } from "./dto/bet-totals.dto";

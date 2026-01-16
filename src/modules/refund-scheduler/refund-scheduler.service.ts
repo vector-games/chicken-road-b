@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { BetService } from '../bet/bet.service';
 import { RedisService } from '../redis/redis.service';
-import { SingleWalletFunctionsService } from '../../routes/single-wallet-functions/single-wallet-functions.service';
+import { WalletService } from '@vector-games/game-core';
 import { GameService } from '../games/game.service';
-import { Bet, BetStatus } from '../../entities/bet.entity';
+import { Bet, BetStatus } from '@vector-games/game-core';
 import { DEFAULTS } from '../../config/defaults.config';
 
 /**
@@ -25,7 +25,7 @@ export class RefundSchedulerService implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly betService: BetService,
     private readonly redisService: RedisService,
-    private readonly singleWalletFunctionsService: SingleWalletFunctionsService,
+    private readonly walletService: WalletService,
     private readonly gameService: GameService,
   ) {}
 
@@ -321,25 +321,18 @@ export class RefundSchedulerService implements OnModuleInit, OnModuleDestroy {
         betTime: bet.betPlacedAt?.toISOString() || bet.createdAt.toISOString(),
         updateTime: new Date().toISOString(),
         roundId: bet.roundId,
-        gamePayloads: {
-          platform: gamePayloads.platform,
-          gameType: gamePayloads.gameType,
-          gameCode: gamePayloads.gameCode,
-          gameName: gamePayloads.gameName,
-          betType: bet.betType || null,
-          currency: bet.currency || DEFAULTS.CURRENCY.DEFAULT,
-        },
+        gameCode: bet.gameCode, // Required for WalletService
         gameInfo: bet.gameInfo ? JSON.parse(bet.gameInfo) : undefined,
       };
     }));
 
     try {
       // Call refund API with all transactions in batch
-      const refundResult = await this.singleWalletFunctionsService.refundBet(
-        operatorId, // agentId
+      const refundResult = await this.walletService.refundBet({
+        agentId: operatorId,
         userId,
         refundTransactions,
-      );
+      });
 
       if (refundResult.status !== '0000') {
         throw new Error(

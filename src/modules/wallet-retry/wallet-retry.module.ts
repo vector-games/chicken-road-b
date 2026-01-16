@@ -1,10 +1,9 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { WalletRetryJob } from '../../entities/wallet-retry-job.entity';
-import { WalletRetryJobService } from './wallet-retry-job.service';
+import { WalletRetryJob, WalletRetryModule as CoreWalletRetryModule, WalletRetryService } from '@vector-games/game-core';
 import { WalletRetryProcessorService } from './wallet-retry-processor.service';
 import { WalletRetrySchedulerService } from './wallet-retry-scheduler.service';
-import { SingleWalletFunctionsModule } from '../../routes/single-wallet-functions/single-wallet-functions.module';
+import { WalletConfigModule } from '../wallet-config/wallet-config.module';
 import { BetModule } from '../bet/bet.module';
 import { WalletAuditModule } from '../wallet-audit/wallet-audit.module';
 import { RedisModule } from '../redis/redis.module';
@@ -12,17 +11,17 @@ import { RedisModule } from '../redis/redis.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([WalletRetryJob]),
-    forwardRef(() => SingleWalletFunctionsModule),
+    CoreWalletRetryModule, // Provides WalletRetryService from package
+    WalletConfigModule, // Provides WalletService from package
     BetModule,
     forwardRef(() => WalletAuditModule),
     RedisModule,
   ],
   providers: [
-    WalletRetryJobService,
     WalletRetryProcessorService,
     WalletRetrySchedulerService,
   ],
-  exports: [WalletRetryJobService],
+  exports: [CoreWalletRetryModule], // Export WalletRetryService from package
 })
 export class WalletRetryModule {}
 

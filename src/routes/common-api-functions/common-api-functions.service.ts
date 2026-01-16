@@ -1,14 +1,12 @@
 import { ConflictException, Injectable, Logger } from '@nestjs/common';
-import { ERROR_CODES } from '../../common/constants';
-import { Agents } from '../../entities/agents.entity';
+import { Agents, AgentsService, JwtTokenService, UserService, CreateUserParams } from '@vector-games/game-core';
 import { GameConfigService } from '../../modules/gameConfig/game-config.service';
-import { JwtTokenService } from '../../modules/jwt/jwt-token.service';
 import { UserSessionService } from '../../modules/user-session/user-session.service';
-import { CreateUserParams, UserService } from '../../modules/user/user.service';
 import { CreateMemberBodyDto } from './DTO/create-member.dto';
 import { DEFAULTS } from '../../config/defaults.config';
 import { GameService } from '../../modules/games/game.service';
-import { AgentsService } from '../../modules/agents/agents.service';
+
+import { ERROR_CODES } from '../../common/constants';
 
 @Injectable()
 export class CommonApiFunctionsService {

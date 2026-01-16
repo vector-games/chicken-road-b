@@ -1,6 +1,6 @@
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
-import { AgentAuthGuard } from '../../auth/agent-auth.guard';
+import { AgentAuthGuard } from '@vector-games/game-core';
 import { CommonApiFunctionsService } from './common-api-functions.service';
 import { CreateMemberBodyDto } from './DTO/create-member.dto';
 import { LoginLaunchGameDto } from './DTO/login-launch-game.dto';

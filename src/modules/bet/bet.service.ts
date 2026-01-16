@@ -6,7 +6,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, FindOptionsWhere, Repository } from 'typeorm';
-import { Bet, BetStatus, Difficulty } from '../../entities/bet.entity';
+import { Bet, BetStatus } from '@vector-games/game-core';
+import { Difficulty } from '../../entities/bet.entity';
 import { DEFAULTS } from '../../config/defaults.config';
 import { GameService } from '../games/game.service';
 
@@ -24,6 +25,7 @@ export interface CreateBetParams {
   balanceAfterBet?: string;
   createdBy: string;
   operatorId: string;
+  // Note: This local service uses old structure, but entity now uses gameMetadata
 }
 
 export interface SettlementParams {
@@ -95,8 +97,10 @@ export class BetService {
       externalPlatformTxId: params.externalPlatformTxId,
       userId: params.userId,
       roundId: params.roundId,
-      difficulty: params.difficulty,
-      betType: params.betType,
+      gameMetadata: {
+        difficulty: params.difficulty,
+        betType: params.betType,
+      },
       betAmount: params.betAmount,
       currency: params.currency,
       gameCode: params.gameCode,

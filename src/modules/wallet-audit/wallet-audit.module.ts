@@ -1,6 +1,6 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { WalletAudit } from '../../entities/wallet-audit.entity';
+import { WalletAudit } from '@vector-games/game-core';
 import { WalletAuditService } from './wallet-audit.service';
 import { WalletAuditCleanupService } from './wallet-audit-cleanup.service';
 import { WalletRetryModule } from '../wallet-retry/wallet-retry.module';

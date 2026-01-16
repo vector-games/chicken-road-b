@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Bet } from '../../entities/bet.entity';
+import { Bet } from '@vector-games/game-core';
 import { BetService } from './bet.service';
 import { GameModule } from '../games/game.module';
 

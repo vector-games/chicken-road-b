@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { User } from '../../entities/User.entity';
+import { User } from '@vector-games/game-core';
 
 export interface CreateUserParams {
   userId: string;

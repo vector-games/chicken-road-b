@@ -13,15 +13,14 @@ import { Server, Socket } from 'socket.io';
 import {
   JwtTokenService,
   UserTokenPayload,
-} from '../../modules/jwt/jwt-token.service';
+} from '@vector-games/game-core';
 import { GameAction, GameActionDto } from './DTO/game-action.dto';
 import { GamePlayService } from './game-play.service';
-import { SingleWalletFunctionsService } from '../single-wallet-functions/single-wallet-functions.service';
-import { UserService } from '../../modules/user/user.service';
+import { WalletService } from '@vector-games/game-core';
+import { UserService, AgentsService } from '@vector-games/game-core';
 import { LastWinBroadcasterService } from '../../modules/last-win/last-win-broadcaster.service';
 import { FairnessService } from '../../modules/fairness/fairness.service';
 import { GameService } from '../../modules/games/game.service';
-import { AgentsService } from '../../modules/agents/agents.service';
 import { DEFAULTS } from '../../config/defaults.config';
 import { ErrorResponse } from '../../common/types';
 
@@ -102,7 +101,7 @@ export class GamePlayGateway
   constructor(
     private readonly jwtTokens: JwtTokenService,
     private readonly gamePlayService: GamePlayService,
-    private readonly singleWalletFunctionsService: SingleWalletFunctionsService,
+    private readonly walletService: WalletService,
     private readonly userService: UserService,
     private readonly lastWinBroadcasterService: LastWinBroadcasterService,
     private readonly fairnessService: FairnessService,
@@ -248,7 +247,7 @@ export class GamePlayGateway
       balance: DEFAULTS.CURRENCY.DEFAULT_BALANCE,
     };
 
-    const walletBalance = await this.singleWalletFunctionsService.getBalance(agentId, userId);
+    const walletBalance = await this.walletService.getBalance(agentId, userId);
     balance.balance = walletBalance.balance.toString();
     balance.currency = DEFAULTS.CURRENCY.DEFAULT;
 
@@ -625,7 +624,7 @@ export class GamePlayGateway
                 );
               } else {
                 ack(resp);
-                const walletBalance = await this.singleWalletFunctionsService.getBalance(agentId, userId);
+                const walletBalance = await this.walletService.getBalance(agentId, userId);
                 const balanceEvent: BalanceEventPayload = {
                   currency: DEFAULTS.CURRENCY.DEFAULT,
                   balance: walletBalance.balance.toString(),
@@ -671,7 +670,7 @@ export class GamePlayGateway
               if ('error' in r) {
                 ack(formatErrorResponse(r.error));
               } else if (r.isFinished) {
-                const walletBalance = await this.singleWalletFunctionsService.getBalance(agentId, userId);
+                const walletBalance = await this.walletService.getBalance(agentId, userId);
                 const balanceEvent: BalanceEventPayload = {
                   currency: r.currency,
                   balance: walletBalance.balance.toString(),
@@ -717,7 +716,7 @@ export class GamePlayGateway
                 );
               } else {
                 ack(r);
-                const walletBalance = await this.singleWalletFunctionsService.getBalance(agentId, userId);
+                const walletBalance = await this.walletService.getBalance(agentId, userId);
                 const balanceEvent: BalanceEventPayload = {
                   currency: DEFAULTS.CURRENCY.DEFAULT,
                   balance: walletBalance.balance.toString(),

@@ -33,6 +33,7 @@
     "@nestjs/swagger": "^11.2.1",
     "@nestjs/typeorm": "^11.0.0",
     "@nestjs/websockets": "^11.1.6",
+    "@vector-games/game-core": "file:../game-platform-core/vector-games-game-core-1.0.0.tgz",
     "axios": "^1.13.2",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",

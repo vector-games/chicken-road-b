@@ -8,7 +8,8 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
-import { AgentsService } from '../modules/agents/agents.service';
+import { AgentsService } from '@vector-games/game-core';
+
 import { GameConfigService } from '../modules/gameConfig/game-config.service';
 
 const AUTH_CONSTANTS = {

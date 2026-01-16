@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, ForbiddenException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { Bet, BetStatus } from "../../../entities/bet.entity";
+import { Bet, BetStatus } from "@vector-games/game-core";
 import { Game } from "../../../entities/game.entity";
 import { AdminRole } from "../../../entities/admin.entity";
 import { PlayerSummaryQueryDto } from "./dto/player-summary-query.dto";

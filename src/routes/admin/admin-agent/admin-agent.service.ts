@@ -1,9 +1,8 @@
 import { Injectable, BadRequestException, NotFoundException, Logger, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
-import { Bet } from '../../../entities/bet.entity';
+import { Bet, Agents } from '@vector-games/game-core';
 import { Game } from '../../../entities/game.entity';
-import { Agents } from '../../../entities/agents.entity';
 import { Admin, AdminRole } from '../../../entities/admin.entity';
 import { AgentQueryDto } from './dto/agent-query.dto';
 import { AgentResponseDto } from './dto/agent-response.dto';
